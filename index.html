@@ -1,0 +1,798 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI 5분 영상 자동 제작기</title>
+    <link rel="stylesheet" href="./styles.css?v=20260620-angle-visible" />
+  </head>
+  <body>
+    <div class="flashbar" aria-label="서비스 안내">
+      <span>제이린쌤 뮤비 자동 제작기</span>
+      <strong>서버 저장 없음</strong>
+      <span>사용자 API 키로 실행</span>
+    </div>
+
+    <main class="page">
+      <section class="hero" id="home">
+        <div class="hero-visual left" aria-hidden="true">
+          <div class="mock-window">
+            <span></span><span></span><span></span>
+            <strong>프롬프트 대기열</strong>
+            <i></i><i></i><i></i>
+          </div>
+          <div class="mock-phone">
+            <b></b>
+            <span></span>
+            <span></span>
+            <em></em>
+          </div>
+        </div>
+        <div class="hero-visual right" aria-hidden="true">
+          <div class="render-card">
+            <strong>60</strong>
+            <span>장면 준비</span>
+          </div>
+        </div>
+        <div class="brand-mark" aria-hidden="true">AI</div>
+        <div class="deal-pill">제이린쌤 전용</div>
+        <h1><span>제이린쌤 뮤비</span><em>자동 제작기</em></h1>
+        <p>
+          참고 이미지의 스타일을 읽고, 60개 장면 프롬프트와 이미지를 만든 뒤
+          사용자의 브라우저에서 긴 영상을 조립합니다.
+        </p>
+        <div class="hero-actions">
+          <a href="#studio" class="hero-cta">제작 시작</a>
+          <span>웹으로 배포 가능</span>
+        </div>
+        <div class="proof-row" aria-label="핵심 구조">
+          <div><strong>60</strong><span>장면 이미지</span></div>
+          <div><strong>5분</strong><span>기본 영상 길이</span></div>
+          <div><strong>로컬</strong><span>브라우저 처리</span></div>
+        </div>
+      </section>
+
+      <section class="studio maker-page" id="studio">
+        <aside class="app-sidebar" aria-label="제작 메뉴">
+          <div class="sidebar-logo">
+            <span>JL</span>
+            <strong>제이린쌤</strong>
+          </div>
+          <nav class="sidebar-nav">
+            <a href="#home" class="sidebar-link" data-sidebar-target="home">홈</a>
+            <a href="#studio" class="sidebar-link active" data-sidebar-target="studio">AI 뮤비</a>
+            <a href="#ai-image-section" class="sidebar-link" data-sidebar-target="ai-image-section">AI 이미지</a>
+            <a href="#my-videos-section" class="sidebar-link" data-sidebar-target="my-videos-section">내 영상들</a>
+            <a href="#help-section" class="sidebar-link" data-sidebar-target="help-section">도움말</a>
+          </nav>
+          <div class="sidebar-profile">
+            <span>무료 사용</span>
+            <strong>브라우저 제작</strong>
+          </div>
+        </aside>
+        <section class="workspace">
+          <section class="panel api-panel workflow-step step-1-panel">
+            <div class="panel-title">
+              <div>
+                <p class="section-kicker">1단계</p>
+                <h2>API 설정</h2>
+              </div>
+              <div class="title-actions">
+                <button class="ghost-button key-link" id="openKeyModalButton" type="button">Google 키 설정하기</button>
+                <a class="ghost-button key-link spend-link" href="https://ai.studio/spend" target="_blank" rel="noopener">지출 한도 확인</a>
+                <button class="icon-button" id="clearKeyButton" title="저장된 API 키 삭제" aria-label="저장된 API 키 삭제">
+                  <span aria-hidden="true">⌫</span>
+                </button>
+              </div>
+            </div>
+            <div class="grid three">
+              <label>
+                <span>Google API 키</span>
+                <input id="apiKey" type="password" autocomplete="off" placeholder="AQ.A 또는 AIza로 시작하는 Google 키" />
+              </label>
+              <label>
+                <span>텍스트/분석 모델</span>
+                <input id="textModel" type="text" value="gemini-2.5-flash" />
+              </label>
+              <label>
+                <span>이미지 모델</span>
+                <input id="imageModel" type="text" value="auto" />
+              </label>
+            </div>
+            <div class="api-apply-row">
+              <button class="primary-button compact-button" id="applyKeyButton">API 키 적용</button>
+              <span class="key-status" id="keyStatus">아직 적용되지 않음</span>
+            </div>
+          </section>
+
+          <section class="panel workflow-step step-2-panel workflow-hidden" id="ai-image-section">
+            <div class="panel-title">
+              <div>
+                <p class="section-kicker">2단계</p>
+                <h2>제작 준비</h2>
+              </div>
+              <button class="ghost-button" id="sampleButton">샘플 채우기</button>
+            </div>
+            <div class="step-2-inner">
+              <section class="substep-card substep-2-1">
+                <div class="substep-title">
+                  <span>2단계 1</span>
+                  <strong>음악 선정</strong>
+                </div>
+                <label class="source-card source-card-wide">
+                  <span>배경음악</span>
+                  <button class="music-picker-button" id="openMusicModalButton" type="button">
+                    음악 선택 / AI 음악 제작
+                  </button>
+                  <input id="musicFile" class="hidden-file-input" type="file" accept="audio/*" />
+                  <small id="musicStatus" class="field-status">아직 음악 없음</small>
+                </label>
+                <button class="ghost-button substep-next-button" id="skipMusicStepButton" type="button">음악 없이 다음</button>
+              </section>
+
+              <section class="substep-card substep-2-2 workflow-hidden">
+                <div class="substep-title">
+                  <span>2단계 2</span>
+                  <strong>프로젝트 소스</strong>
+                </div>
+                <div class="grid source-grid">
+                  <label class="source-card">
+                    <span>참고 이미지</span>
+                    <input id="referenceImage" type="file" accept="image/png,image/jpeg,image/webp" />
+                  </label>
+                  <label class="source-card">
+                    <span>캐릭터</span>
+                    <button class="music-picker-button" id="openCharacterModalButton" type="button">
+                      캐릭터를 선택하세요
+                    </button>
+                    <input id="characterImage" class="hidden-file-input" type="file" accept="image/png,image/jpeg,image/webp" />
+                    <small id="characterStatus" class="field-status">아직 캐릭터 없음</small>
+                  </label>
+                </div>
+                <button class="ghost-button substep-next-button" id="skipSourceStepButton" type="button">소스 없이 다음</button>
+              </section>
+
+              <section class="substep-card substep-2-3 workflow-hidden">
+                <div class="substep-title">
+                  <span>2단계 3</span>
+                  <strong>시리즈 템플릿</strong>
+                </div>
+                <label class="series-picker">
+                  <span>시리즈 템플릿</span>
+                  <select id="seriesTemplate">
+                    <option value="">직접 입력</option>
+                    <option value="doowop">시니어채널 두왑 시리즈</option>
+                    <option value="masterpiece">시니어채널 명화 시리즈</option>
+                    <option value="italianLove">이탈리안 러브송 시리즈</option>
+                    <option value="summerVintage">여름 빈티지 시리즈</option>
+                    <option value="cafeJazz">카페 재즈 빈티지 스타일</option>
+                    <option value="hollywoodWalk">할리우드 워킹 빈티지 시리즈</option>
+                    <option value="lasVegas">라스베가스 빈티지 스타일</option>
+                    <option value="mapleFantasy">메이플 판타지 컨셉</option>
+                  </select>
+                </label>
+            <div class="quick-test-row">
+              <button class="primary-button compact-button" id="quickTestButton" type="button">3개 테스트 설정</button>
+              <span>장면 3개 · 20초 · 낮은 품질로 먼저 확인</span>
+            </div>
+            <section class="style-showcase" aria-label="AI 뮤비 스타일 선택">
+              <div class="style-intro">
+                <strong>25+</strong>
+                <h3>AI 뮤비 스타일</h3>
+                <p>원하는 분위기를 고르면 설명이 자동으로 채워집니다. 참고 이미지를 올리면 그 이미지 느낌까지 함께 반영합니다.</p>
+                <button class="primary-button compact-button" id="autoStyleButton" type="button">내 스타일 자동 만들기</button>
+              </div>
+              <div class="style-grid">
+                <button class="style-card retro" type="button" data-style-prompt="레트로 퓨처 신스 스타일입니다. 반짝이는 CD, 네온 조명, 금속 질감, 미래적인 패션, 강한 비트에 어울리는 감각적인 뮤비 영상입니다.">
+                  <span></span><strong>레트로 퓨처 신스</strong>
+                </button>
+                <button class="style-card midnight" type="button" data-style-prompt="미드나잇 글로스 스타일입니다. 어두운 배경, 반짝이는 안경과 글로시한 피부, 도시 야경, 세련된 클럽 조명이 어울리는 고급스러운 뮤비 영상입니다.">
+                  <span></span><strong>미드나잇 글로스</strong>
+                </button>
+                <button class="style-card chrome" type="button" data-style-prompt="Y2K 일루전 스타일입니다. 실버 크롬, 유리 조각, 반사광, 디지털 패션, 몽환적인 2000년대 미래 감성이 담긴 뮤비 영상입니다.">
+                  <span></span><strong>Y2K 일루전</strong>
+                </button>
+                <button class="style-card urban" type="button" data-style-prompt="어반 림블 스타일입니다. 스포츠카, 스트리트 패션, 도시 도로, 강한 포즈와 역동적인 카메라 움직임이 있는 뮤비 영상입니다.">
+                  <span></span><strong>어반 림블</strong>
+                </button>
+                <button class="style-card snow" type="button" data-style-prompt="벨벳 스노우 스타일입니다. 눈 내리는 배경, 부드러운 흰색 의상, 차가운 공기와 따뜻한 감정이 섞인 감성적인 뮤비 영상입니다.">
+                  <span></span><strong>벨벳 스노우</strong>
+                </button>
+                <button class="style-card sugar" type="button" data-style-prompt="슈가 러쉬 핑크 스타일입니다. 핑크 톤, 달콤한 패키지, 팝한 그래픽, 밝고 귀여운 에너지가 가득한 뮤비 영상입니다.">
+                  <span></span><strong>슈가 러쉬 핑크</strong>
+                </button>
+                <button class="style-card forest" type="button" data-style-prompt="숲의 왈츠 스타일입니다. 숲, 요정 같은 빛, 투명한 날개, 햇살과 자연의 움직임이 아름답게 어우러진 판타지 뮤비 영상입니다.">
+                  <span></span><strong>숲의 왈츠</strong>
+                </button>
+                <button class="style-card portal" type="button" data-style-prompt="성간 균열 스타일입니다. 우주, 강한 역광, 거대한 빛의 균열, 미지의 세계로 걸어가는 영화적인 뮤비 영상입니다.">
+                  <span></span><strong>성간 균열</strong>
+                </button>
+                <button class="style-card persona" type="button" data-style-prompt="디지털 페르소나 스타일입니다. 선명한 얼굴 클로즈업, 푸른 조명, 신비로운 표정과 미래적인 분위기의 감각적인 뮤비 영상입니다.">
+                  <span></span><strong>디지털 페르소나</strong>
+                </button>
+                <button class="style-card neon" type="button" data-style-prompt="사이버펑크 네온 스타일입니다. 얼굴 위에 흐르는 디지털 문자, 보라색과 핑크색 네온, 빠른 도시 에너지의 뮤비 영상입니다.">
+                  <span></span><strong>사이버펑크 네온</strong>
+                </button>
+                <button class="style-card drama" type="button" data-style-prompt="영화적 드라마 스타일입니다. 무대 조명, 어두운 극장, 인물의 뒷모습과 감정적인 카메라 워킹이 있는 서사형 뮤비 영상입니다.">
+                  <span></span><strong>영화적 드라마</strong>
+                </button>
+                <button class="style-card warm" type="button" data-style-prompt="픽사의 따뜻함 스타일입니다. 부드러운 3D 캐릭터 감성, 따뜻한 표정, 밝은 색감과 로맨틱한 분위기의 뮤비 영상입니다.">
+                  <span></span><strong>픽사의 따뜻함</strong>
+                </button>
+              </div>
+            </section>
+            <div class="series-strip-wrap">
+              <button class="series-scroll-button" type="button" data-series-scroll="-1" aria-label="시리즈 왼쪽 보기">‹</button>
+              <div class="series-examples" aria-label="시리즈 예시 이미지">
+                <button class="example-card doowop" type="button" data-series="doowop">
+                  <span></span><strong>두왑</strong><em>해변 · 다이너 · 클래식카</em>
+                </button>
+                <button class="example-card masterpiece" type="button" data-series="masterpiece">
+                  <span></span><strong>명화</strong><em>중세 여인 · 성 · 촛불</em>
+                </button>
+                <button class="example-card italian" type="button" data-series="italianLove">
+                  <span></span><strong>이탈리안</strong><em>골목 · 발코니 · 베스파</em>
+                </button>
+                <button class="example-card summer" type="button" data-series="summerVintage">
+                  <span></span><strong>여름</strong><em>해변 · 파라솔 · 수영장</em>
+                </button>
+                <button class="example-card cafe" type="button" data-series="cafeJazz">
+                  <span></span><strong>카페 재즈</strong><em>커피 · 책 · 비 오는 창가</em>
+                </button>
+                <button class="example-card hollywood" type="button" data-series="hollywoodWalk">
+                  <span></span><strong>할리우드</strong><em>극장 · 호텔 · 워킹</em>
+                </button>
+                <button class="example-card vegas" type="button" data-series="lasVegas">
+                  <span></span><strong>라스베가스</strong><em>네온 · 카지노 · 칵테일</em>
+                </button>
+                <button class="example-card maple" type="button" data-series="mapleFantasy">
+                  <span></span><strong>메이플</strong><em>판타지 · 마법 · 모험</em>
+                </button>
+              </div>
+              <button class="series-scroll-button" type="button" data-series-scroll="1" aria-label="시리즈 오른쪽 보기">›</button>
+            </div>
+            <section class="series-video-preview" id="seriesVideoPreview" hidden>
+              <div class="series-video-copy">
+                <span id="seriesVideoKicker">참고 영상</span>
+                <strong id="seriesVideoTitle">캘리포니아 두왑 참고 영상</strong>
+                <p id="seriesVideoDescription">선택한 시리즈의 분위기를 영상으로 먼저 확인합니다.</p>
+              </div>
+              <div class="series-video-frame">
+                <iframe
+                  id="seriesVideoFrame"
+                  title="시리즈 참고 영상"
+                  loading="lazy"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowfullscreen
+                ></iframe>
+              </div>
+              <a id="seriesVideoLink" class="ghost-button series-video-link" href="#" target="_blank" rel="noreferrer">유튜브에서 보기</a>
+            </section>
+            <details class="series-guide">
+              <summary>시리즈 구분 포인트 자세히 살펴보기</summary>
+              <div class="guide-table-wrap">
+                <table class="guide-table">
+                  <thead>
+                    <tr>
+                      <th>시리즈명</th>
+                      <th>화면 주요 요소</th>
+                      <th>색감·시대감·의상</th>
+                      <th>움직임 스타일</th>
+                      <th>분위기</th>
+                      <th>피해야 할 것</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th>시니어채널 두왑 시리즈</th>
+                      <td>1960년대 캘리포니아 해변 도시, 팜트리 거리, 클래식카, 빈티지 다이너, 주크박스, 보드워크, 젊은 커플과 친구들</td>
+                      <td>파스텔 핑크·민트·크림·선셋 오렌지·아쿠아 블루, 1960년대 남부 캘리포니아 복고감, 폴카닷 원피스·A라인 드레스·카디건·새들슈즈·볼링셔츠·선글라스</td>
+                      <td>사진 연결형 슬로우 팬, 미세한 줌인/줌아웃, 약한 패럴랙스, 좌우 슬라이드, 부드러운 크로스페이드</td>
+                      <td>청춘, 향수, 낭만, 햇살, 달콤함, 경쾌함</td>
+                      <td>현대 자동차, 스마트폰, 현대 간판, 과한 HDR, 사이버펑크 조명, 디지털 느낌 과다</td>
+                    </tr>
+                    <tr>
+                      <th>시니어채널 명화 시리즈</th>
+                      <td>중세·르네상스풍 여인, 고전 초상화 구도, 성 내부, 돌창문, 정원, 촛불, 꽃, 태피스트리</td>
+                      <td>딥 그린·버건디·아이보리·골드·앤틱 블루, 중세~르네상스 회화 감성, 벨벳 드레스·자수 소매·브로케이드·진주·베일·머리망</td>
+                      <td>극도로 느린 줌인, 얼굴·손·천의 미세한 움직임, 촛불 flicker, 커튼 흔들림, 아주 약한 패럴랙스</td>
+                      <td>우아함, 고요함, 신비로움, 숭고함, 서정성, 아름다움</td>
+                      <td>현대 메이크업, 플라스틱 피부, 애니풍 과장, 네온 컬러, 현대 액세서리, 과한 판타지 질감</td>
+                    </tr>
+                    <tr>
+                      <th>이탈리안 러브송 시리즈</th>
+                      <td>이탈리아 골목, 석양 광장, 카페, 발코니, 베스파, 꽃 장식 창문, 해안 마을, 로맨틱 커플</td>
+                      <td>테라코타·크림·올리브·골드·와인 레드, 1950~1970년대 유럽 복고 로맨스, 리넨 셔츠·플로럴 원피스·실크 스카프·클래식 수트·선드레스</td>
+                      <td>부드러운 시네마틱 슬라이드, 느린 줌, 바람이 스치는 듯한 패럴랙스, 유영하듯 이어지는 전환</td>
+                      <td>사랑, 여유, 서정성, 노을, 유럽 감성, 낭만</td>
+                      <td>현대 광고판, 현대 스트리트웨어, 과한 섹시함, 차가운 블루 네온, EDM 느낌 조명</td>
+                    </tr>
+                    <tr>
+                      <th>여름 빈티지 시리즈</th>
+                      <td>해변, 파라솔, 빈티지 수영복, 휴양지 모텔, 수영장, 선글라스, 코코넛 음료, 바닷가 산책, 여름 소품</td>
+                      <td>아쿠아·코랄·크림·썬옐로·스카이 블루, 1950~1970년대 휴양지 복고감, 원피스 수영복·선드레스·밀짚모자·스카프·샌들</td>
+                      <td>햇살 스며드는 슬로우 팬, 부드러운 줌, 바람·파도 느낌의 미세한 흐름, 느린 드리프트형 구성</td>
+                      <td>청량함, 휴가, 여유, 낭만, 햇빛, 복고 여름</td>
+                      <td>현대 비치웨어 로고, 스포츠 브랜드, 과한 보정, 어두운 무드, 겨울 색감</td>
+                    </tr>
+                    <tr>
+                      <th>카페 재즈 빈티지 스타일</th>
+                      <td>재즈 카페 내부, 우드 테이블, 커피잔, 책, 꽃병, 창밖 비, 레코드판, 스탠드 조명, 조용한 여성</td>
+                      <td>브라운·앰버·버건디·다크 그린·크림 조명, 1940~1960년대 유럽/뉴욕 카페 무드, 니트·울 코트·블라우스·클래식 드레스·베레모</td>
+                      <td>슬로우 푸시인, 정적인 팬, 빗방울/스팀 중심의 아주 작은 패럴랙스, 차분한 호흡</td>
+                      <td>차분함, 세련됨, 따뜻함, 비 오는 밤, 재즈, 감성적 고독</td>
+                      <td>현대 카페 로고, 노트북 클로즈업, 현대 플라스틱 소품, 형광 조명, 과한 네온</td>
+                    </tr>
+                    <tr>
+                      <th>할리우드 워킹 빈티지 시리즈</th>
+                      <td>올드 할리우드 거리, 영화관 간판, 클래식 호텔, 야자수 거리, 우아한 여성 워킹샷, 쇼윈도, 클래식카</td>
+                      <td>골드·블랙·샴페인·크림·레드, 1940~1960년대 할리우드 황금기, 장갑·힐·롱코트·이브닝 드레스·진주·웨이브 헤어</td>
+                      <td>느린 트래킹 느낌, 좌우 패닝, 살짝 따라가는 돌리, 야경을 우아하게 이어주는 흐름</td>
+                      <td>글래머, 자신감, 세련됨, 도시의 밤, 영화적 우아함</td>
+                      <td>현대 브랜드 간판, 현대 스트리트패션, 과한 플래시, 클럽 조명, 지나치게 현대적인 도시 밀도</td>
+                    </tr>
+                    <tr>
+                      <th>라스베가스 빈티지 스타일</th>
+                      <td>빈티지 라스베가스 스트립, 네온 사인, 카지노 외관, 호텔 입구, 칵테일 바, 쇼걸 무드, 클래식카, 사막 밤공기</td>
+                      <td>네온 핑크·터쿼이즈·골드·블랙·레드·퍼플, 1950~1970년대 올드 베가스, 시퀸 드레스·퍼·장갑·칵테일 드레스·하이힐</td>
+                      <td>네온을 훑는 슬로우 팬, 느린 줌, 화려한 밤 풍경 크로스페이드, 라운지 쇼 같은 흐름</td>
+                      <td>화려함, 밤의 낭만, 복고 카지노 감성, 유혹적이지만 품위 있음</td>
+                      <td>현대 LED 전광판 느낌, 현대 클럽 패션, 과도한 선정성, 사이버펑크 톤</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </details>
+            <label>
+              <span>간단한 한국어 설명</span>
+              <textarea id="basePrompt" rows="5" placeholder="예: 1960년대 캘리포니아 해변, 다이너, 클래식카가 나오는 빈티지 영상"></textarea>
+            </label>
+              </section>
+            </div>
+          </section>
+
+          <section class="panel workflow-step step-3-panel workflow-hidden" id="video-options-section">
+            <div class="panel-title">
+              <div>
+                <p class="section-kicker">옵션</p>
+                <h2>영상 옵션</h2>
+              </div>
+              <div class="segmented" role="group" aria-label="영상 비율">
+                <button class="segment active" data-ratio="16:9">16:9</button>
+                <button class="segment" data-ratio="9:16">9:16</button>
+              </div>
+            </div>
+            <div class="grid four">
+              <label>
+                <span>장면 수</span>
+                <input id="sceneCount" type="number" min="3" max="60" value="60" />
+              </label>
+              <label>
+                <span>영상 길이(초)</span>
+                <select id="duration">
+                  <option value="20">20초</option>
+                  <option value="30">30초</option>
+                  <option value="40">40초</option>
+                  <option value="50">50초</option>
+                  <option value="60">1분</option>
+                  <option value="120">2분</option>
+                  <option value="180">3분</option>
+                  <option value="240">4분</option>
+                  <option value="300" selected>5분</option>
+                </select>
+              </label>
+              <label>
+                <span>이미지 비율</span>
+                <select id="imageSize">
+                  <option value="16:9">16:9 가로형</option>
+                  <option value="9:16">9:16 세로형</option>
+                </select>
+              </label>
+              <label>
+                <span>이미지 품질</span>
+                <select id="imageQuality">
+                  <option value="low">낮음</option>
+                  <option value="medium">보통</option>
+                  <option value="high">높음</option>
+                </select>
+              </label>
+              <label>
+                <span>Veo 영상 모델</span>
+                <select id="videoModel">
+                  <option value="veo-3.1-fast-generate-preview" selected>Veo 3.1 빠른 생성</option>
+                  <option value="veo-3.1-generate-preview">Veo 3.1 고품질</option>
+                  <option value="veo-3.1-lite-generate-preview">Veo 3.1 가벼운 생성</option>
+                </select>
+              </label>
+            </div>
+            <div class="model-cards" aria-label="영상 모델 카드 선택">
+              <button class="model-card active" type="button" data-video-model="veo-3.1-fast-generate-preview">
+                <span class="model-icon">veo</span>
+                <strong>Veo 3.1 빠른 생성</strong>
+                <em>테스트와 샘플 제작에 적합합니다. 생성 속도를 우선으로 하면서 자연스러운 움직임을 만듭니다.</em>
+              </button>
+              <button class="model-card" type="button" data-video-model="veo-3.1-generate-preview">
+                <span class="model-icon">veo</span>
+                <strong>Veo 3.1 고품질</strong>
+                <em>최종 뮤비 제작에 적합합니다. 인물, 조명, 카메라 움직임을 더 영화적으로 표현합니다.</em>
+              </button>
+              <button class="model-card" type="button" data-video-model="veo-3.1-lite-generate-preview">
+                <span class="model-icon">veo</span>
+                <strong>Veo 3.1 가벼운 생성</strong>
+                <em>가볍게 확인할 때 사용합니다. 빠른 결과와 낮은 부담을 우선합니다.</em>
+              </button>
+            </div>
+            <div class="checks">
+              <label class="check">
+                <input id="saveKey" type="checkbox" />
+                <span>다음에도 API 키 자동 입력</span>
+              </label>
+              <label class="check">
+                <input id="showCaptions" type="checkbox" checked />
+                <span>영상에 장면 제목 넣기</span>
+              </label>
+              <label class="check">
+                <input id="varyAngles" type="checkbox" checked />
+                <span>장면마다 다른 카메라 각도 만들기</span>
+              </label>
+            </div>
+          </section>
+
+          <section class="actions workflow-step step-3-panel workflow-hidden">
+            <div class="workflow-heading">
+              <p class="section-kicker">3단계</p>
+              <h2>원하는 제작 단계를 고르세요</h2>
+            </div>
+            <button class="workflow-button" id="promptButton" type="button">
+              <strong>1. 샘플로 3개 이미지만 만들어보기</strong>
+              <span>장르 느낌과 API 연결을 먼저 짧게 확인합니다.</span>
+            </button>
+            <button class="workflow-button" id="tenImageButton" type="button">
+              <strong>2. 샘플로 10개 이미지만 먼저 만들어보기</strong>
+              <span>뮤비 흐름과 장면 다양성을 10장으로 먼저 확인합니다.</span>
+            </button>
+            <button class="workflow-button" id="imageButton" type="button">
+              <strong>3. 60개 프롬프트 + 60개 이미지 만들기</strong>
+              <span>영상으로 만들기 전, 이미지 60장을 먼저 완성합니다.</span>
+            </button>
+            <button class="workflow-button main-action" id="autoButton" type="button">
+              <strong>4. 60개 이미지 만든 뒤 영상까지 바로 만들기</strong>
+              <span>프롬프트, 이미지, 5분 영상 조립까지 한 번에 진행합니다.</span>
+            </button>
+            <button class="workflow-button full-mv-button" id="fullMvButton" type="button">
+              <strong>샘플이 마음에 들면 뮤비 풀버전 만들기</strong>
+              <span>현재 만든 3개 이미지는 그대로 포함하고, 나머지 장면을 이어서 만들어 5분 뮤비까지 완성합니다.</span>
+            </button>
+            <div class="mini-actions">
+              <button class="ghost-button" id="longFormButton" type="button">롱폼 생성</button>
+              <button class="ghost-button" id="shortsButton" type="button">쇼츠 생성</button>
+              <button class="ghost-button" id="videoButton" type="button">Veo로 진짜 영상 만들기</button>
+              <button class="ghost-button" id="angleButton" type="button">다른 각도 이미지 만들기</button>
+              <button class="ghost-button" id="downloadImagesButton" type="button">이미지 한번에 다운받기</button>
+              <button class="ghost-button" id="downloadVideoButton" type="button">영상 한번에 다운받기</button>
+              <button class="ghost-button" id="downloadPromptsButton" type="button">만든 프롬프트 저장하기</button>
+              <button class="ghost-button danger-button" id="resetAllButton" type="button">전부 리셋</button>
+            </div>
+            <div class="angle-preview" id="anglePreview" hidden>
+              <div>
+                <p class="section-kicker">카메라 각도</p>
+                <h3>장면마다 다른 구도로 다시 만듭니다</h3>
+                <p>버튼을 누르면 아래 각도들이 장면마다 순서대로 섞이고, 기존 이미지는 지운 뒤 새 각도로 다시 생성합니다.</p>
+              </div>
+              <div class="angle-preview-list" id="anglePreviewList"></div>
+            </div>
+          </section>
+
+          <section class="panel" id="help-section">
+            <div class="panel-title">
+              <div>
+                <p class="section-kicker">상태</p>
+                <h2>진행 상태</h2>
+              </div>
+              <span id="progressText" class="progress-label">대기 중</span>
+            </div>
+            <div class="progress">
+              <div id="progressBar"></div>
+            </div>
+            <div class="status-actions" id="musicReadyActions" hidden>
+              <button class="primary-button compact-button" id="applyReadyMusicButton" type="button">배경음악으로 적용</button>
+              <button class="ghost-button compact-button" id="downloadReadyMusicButton" type="button">노래 다운로드</button>
+              <button class="ghost-button compact-button" id="openReadyMusicButton" type="button">미리듣기 열기</button>
+            </div>
+            <pre id="log" class="log"></pre>
+          </section>
+        </section>
+
+        <aside class="side">
+          <section class="inspiration-board" aria-label="스타일 예시 영상">
+            <div class="board-tabs">
+              <button class="active" type="button" data-board-tab="popular">인기 예시</button>
+              <button type="button" data-board-tab="mine">내 영상들</button>
+            </div>
+            <div class="event-strip" data-board-panel="popular">
+              <strong>AI 뮤비 스타일 갤러리</strong>
+              <span>원하는 느낌을 고르고 왼쪽에서 바로 제작하세요</span>
+            </div>
+            <div class="inspiration-grid" data-board-panel="popular">
+              <button class="inspo-card tall doowop" type="button" data-series="doowop">
+                <span></span><b class="play-badge">▶</b><em>비슷하게 만들기</em><strong>캘리포니아 두왑</strong>
+              </button>
+              <button class="inspo-card cafe" type="button" data-series="cafeJazz">
+                <span></span><b class="play-badge">▶</b><em>비슷하게 만들기</em><strong>카페 재즈</strong>
+              </button>
+              <button class="inspo-card summer" type="button" data-series="summerVintage">
+                <span></span><b class="play-badge">▶</b><em>비슷하게 만들기</em><strong>여름 빈티지</strong>
+              </button>
+              <button class="inspo-card masterpiece tall" type="button" data-series="masterpiece">
+                <span></span><b class="play-badge">▶</b><em>비슷하게 만들기</em><strong>명화 무드</strong>
+              </button>
+              <button class="inspo-card vegas" type="button" data-series="lasVegas">
+                <span></span><b class="play-badge">▶</b><em>비슷하게 만들기</em><strong>라스베가스 네온</strong>
+              </button>
+              <button class="inspo-card hollywood" type="button" data-series="hollywoodWalk">
+                <span></span><b class="play-badge">▶</b><em>비슷하게 만들기</em><strong>할리우드 워킹</strong>
+              </button>
+              <button class="inspo-card italian" type="button" data-series="italianLove">
+                <span></span><b class="play-badge">▶</b><em>비슷하게 만들기</em><strong>이탈리안 러브송</strong>
+              </button>
+              <button class="inspo-card maple" type="button" data-series="mapleFantasy">
+                <span></span><b class="play-badge">▶</b><em>비슷하게 만들기</em><strong>메이플 판타지</strong>
+              </button>
+              <button class="inspo-card custom" type="button">
+                <span></span><strong>내 스타일 만들기</strong>
+              </button>
+            </div>
+            <div class="my-videos-board" data-board-panel="mine" hidden>
+              <article class="my-video-summary">
+                <strong id="myVideoTitle">아직 만든 영상이 없습니다</strong>
+                <span id="myVideoMeta">이미지나 영상을 만들면 여기에 표시됩니다.</span>
+              </article>
+              <div class="my-video-actions">
+                <button class="ghost-button" id="boardGoScenesButton" type="button">장면 리스트 보기</button>
+                <button class="ghost-button" id="boardDownloadImagesButton" type="button">이미지 받기</button>
+                <button class="primary-button compact-button" id="boardDownloadVideoButton" type="button">영상 받기</button>
+              </div>
+            </div>
+          </section>
+          <section class="preview-card">
+            <div class="panel-title preview-title">
+              <div>
+                <p class="section-kicker">실시간 미리보기</p>
+                <h2>영상 미리보기</h2>
+              </div>
+              <div class="status-pill" id="privacyStatus">브라우저 처리</div>
+            </div>
+            <canvas id="previewCanvas" width="1280" height="720"></canvas>
+            <video id="resultVideo" controls playsinline></video>
+          </section>
+
+          <section class="panel scenes-panel" id="my-videos-section">
+            <div class="panel-title">
+              <div>
+                <p class="section-kicker">장면 구성</p>
+                <h2>장면 리스트</h2>
+              </div>
+              <button class="ghost-button" id="clearImagesButton">이미지 비우기</button>
+            </div>
+            <div id="sceneList" class="scene-list"></div>
+          </section>
+        </aside>
+      </section>
+    </main>
+
+    <dialog class="key-modal" id="keyModal">
+      <form method="dialog" class="key-modal-box">
+        <div class="modal-head">
+          <div>
+            <p class="section-kicker">API 키 설정</p>
+            <h2>키 설정</h2>
+          </div>
+          <button class="icon-button" id="closeKeyModalButton" value="cancel" aria-label="팝업 닫기">×</button>
+        </div>
+        <p class="modal-copy">
+          이미지 생성에는 Google AI Studio API 키가 필요합니다. 새 키는 `AQ.A`로 시작할 수 있고,
+          예전 키는 `AIza`로 시작할 수 있습니다.
+        </p>
+        <a
+          class="primary-button modal-link"
+          href="https://aistudio.google.com/app/api-keys?hl=ko&project=gen-lang-client-0415478112"
+          target="_blank"
+          rel="noopener noreferrer"
+        >Google AI Studio 키 만들기</a>
+        <label>
+          <span>API 키</span>
+          <input id="modalApiKey" type="password" autocomplete="off" placeholder="AQ.A 또는 AIza로 시작하는 Google 키 붙여넣기" />
+        </label>
+        <div class="modal-actions">
+          <button class="ghost-button" value="cancel">취소</button>
+          <button class="primary-button" id="completeKeySetupButton" value="default" type="button">키 설정 완료</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog class="image-modal" id="imageModal">
+      <div class="image-modal-box">
+        <div class="modal-head">
+          <div>
+            <p class="section-kicker">이미지 크게 보기</p>
+            <h2 id="imageModalTitle">이미지 미리보기</h2>
+          </div>
+          <button class="icon-button" id="closeImageModalButton" type="button" aria-label="이미지 미리보기 닫기">×</button>
+        </div>
+        <img id="imageModalPreview" alt="선택한 장면 이미지 크게 보기" />
+      </div>
+    </dialog>
+
+    <dialog class="music-modal" id="musicModal">
+      <div class="music-modal-box">
+        <div class="modal-head">
+          <div>
+            <p class="section-kicker">배경음악</p>
+            <h2>음악을 선택하거나 AI로 만들기</h2>
+          </div>
+          <button class="icon-button" id="closeMusicModalButton" type="button" aria-label="음악 팝업 닫기">×</button>
+        </div>
+
+        <div class="music-modal-grid">
+          <section class="music-choice-card">
+            <strong>음악 업로드</strong>
+            <span>MP3, WAV, M4A 파일을 직접 넣습니다.</span>
+            <button class="primary-button compact-button" id="pickMusicFileButton" type="button">파일 선택</button>
+          </section>
+        </div>
+
+        <section class="music-preview-panel" id="musicPreviewPanel" hidden>
+          <div class="music-preview-head">
+            <span id="musicPreviewStart">00:00</span>
+            <strong id="musicPreviewTitle">선택한 음악</strong>
+            <span id="musicPreviewDuration">00:00</span>
+          </div>
+          <div class="fake-waveform" aria-hidden="true">
+            <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+            <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+            <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+            <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+          </div>
+          <audio id="musicPreviewAudio" preload="metadata"></audio>
+          <div class="music-preview-actions">
+            <button class="round-audio-button" id="playMusicPreviewButton" type="button">▶</button>
+            <button class="round-audio-button" id="stopMusicPreviewButton" type="button">■</button>
+            <select id="musicLeadIn">
+              <option value="0">바로 시작</option>
+              <option value="10" selected>지속 시간 사전 설정 10초</option>
+              <option value="20">지속 시간 사전 설정 20초</option>
+              <option value="30">지속 시간 사전 설정 30초</option>
+            </select>
+            <span class="preview-spacer"></span>
+            <button class="ghost-button" id="cancelPendingMusicButton" type="button">취소</button>
+            <button class="primary-button compact-button" id="confirmMusicButton" type="button">확인하다</button>
+          </div>
+        </section>
+
+        <section class="suno-panel">
+          <div class="panel-title compact-title">
+            <div>
+              <p class="section-kicker">Suno API</p>
+              <h3>AI 음악 제작</h3>
+            </div>
+            <a class="status-pill suno-dashboard-link" href="https://sunoapi.org/ko/dashboard" target="_blank" rel="noopener">Suno 키 받기</a>
+          </div>
+          <p class="modal-copy">
+            Suno 대시보드에서 API 키를 복사해 아래 키 입력칸에 넣으세요. API 주소는 자동으로 공식 생성 주소를 사용합니다.
+          </p>
+          <p class="modal-copy music-warning">
+            브라우저에서 Suno API가 차단되면 AI 음악 제작은 동작하지 않습니다. 그때는 Suno 사이트에서 음악을 만든 뒤 MP3 파일을 다운로드해서 음악 업로드로 넣어 주세요.
+          </p>
+          <div class="grid two">
+            <label>
+              <span>Suno API 주소</span>
+              <input id="sunoEndpoint" type="url" value="https://api.sunoapi.org/api/v1/generate" readonly />
+            </label>
+            <label>
+              <span>Suno API 키</span>
+              <input id="sunoApiKey" type="password" autocomplete="off" placeholder="Suno API 키" />
+            </label>
+          </div>
+          <div class="api-apply-row">
+            <button class="primary-button compact-button" id="applySunoKeyButton" type="button">Suno 키 적용</button>
+            <span class="key-status" id="sunoKeyStatus">아직 적용되지 않음</span>
+          </div>
+          <label>
+            <span>노래 설명</span>
+            <textarea id="sunoPrompt" placeholder="예: 1960년대 캘리포니아 두왑 감성, 따뜻하고 밝은 여성 보컬, 5분 뮤비용"></textarea>
+          </label>
+          <label>
+            <span>가사</span>
+            <textarea id="sunoLyrics" placeholder="가사를 직접 입력하세요. 연주곡으로 만들 때는 비워두면 됩니다."></textarea>
+          </label>
+          <div class="grid two">
+            <label>
+              <span>장르 / 스타일</span>
+              <input id="sunoStyle" type="text" placeholder="doo-wop, vintage, warm vocal" />
+            </label>
+            <label>
+              <span>노래 제목</span>
+              <input id="sunoTitle" type="text" placeholder="제이린쌤 뮤비 BGM" />
+            </label>
+          </div>
+          <label class="check">
+            <input id="sunoInstrumental" type="checkbox" checked />
+            <span>가사 없는 연주곡으로 만들기</span>
+          </label>
+          <div class="suno-work-status" id="sunoWorkStatus" role="status" aria-live="polite">
+            <strong>음악 제작 대기 중</strong>
+            <span>AI 음악 제작을 누르면 진행 상황이 여기에 표시됩니다.</span>
+          </div>
+          <div class="modal-actions">
+            <button class="ghost-button" id="closeMusicModalFooterButton" type="button">닫기</button>
+            <button class="ghost-button" id="downloadSunoMusicButton" type="button" disabled>노래 다운로드</button>
+            <button class="primary-button" id="generateSunoButton" type="button">AI 음악 제작</button>
+          </div>
+        </section>
+      </div>
+    </dialog>
+
+    <dialog class="character-modal" id="characterModal">
+      <div class="character-modal-box">
+        <div class="modal-head">
+          <div>
+            <p class="section-kicker">캐릭터</p>
+            <h2>캐릭터를 선택하세요</h2>
+          </div>
+          <button class="icon-button" id="closeCharacterModalButton" type="button" aria-label="캐릭터 팝업 닫기">×</button>
+        </div>
+        <p class="modal-copy">이 사진 속 인물을 뮤직비디오 장면의 주인공으로 참고합니다.</p>
+        <div class="character-tabs" aria-label="캐릭터 선택 방식">
+          <button class="active" type="button">내 캐릭터</button>
+          <button type="button">캐릭터 라이브러리</button>
+          <button type="button">이미지 스튜디오</button>
+        </div>
+        <section class="character-upload-card">
+          <strong>이미지 업로드</strong>
+          <span>PNG/JPG, 최대 10MB</span>
+          <button class="primary-button compact-button" id="pickCharacterButton" type="button">캐릭터 이미지 선택</button>
+        </section>
+      </div>
+    </dialog>
+
+    <dialog class="similar-modal" id="similarModal">
+      <div class="similar-modal-box">
+        <section class="similar-preview">
+          <div id="similarPreviewImage" class="similar-preview-image"></div>
+        </section>
+        <aside class="similar-panel">
+          <div class="modal-head">
+            <div>
+              <p class="section-kicker">비슷하게 만들기</p>
+              <h2 id="similarTitle">예시 스타일</h2>
+            </div>
+            <button class="icon-button" id="closeSimilarModalButton" type="button" aria-label="비슷하게 만들기 닫기">×</button>
+          </div>
+          <div class="similar-assets">
+            <div>
+              <span>캐릭터</span>
+              <strong id="similarCharacter">예시 이미지 스타일</strong>
+            </div>
+            <div>
+              <span>음악</span>
+              <strong id="similarMusic">업로드한 음악 또는 AI 음악</strong>
+            </div>
+          </div>
+          <label>
+            <span>프롬프트</span>
+            <textarea id="similarPrompt" readonly></textarea>
+          </label>
+          <div class="similar-info">
+            <p><span>타입</span><strong>AI 뮤비</strong></p>
+            <p><span>모델</span><strong>Veo 3.1</strong></p>
+            <p><span>비율</span><strong>16:9</strong></p>
+            <p><span>길이</span><strong>5분</strong></p>
+          </div>
+          <button class="primary-button similar-create-button" id="createSimilarButton" type="button">비슷하게 만들기</button>
+        </aside>
+      </div>
+    </dialog>
+
+    <script src="./app.js?v=20260620-angle-visible"></script>
+  </body>
+</html>
