@@ -1,0 +1,220 @@
+{
+  "project": {
+    "name": "제이린쌤 뮤비 자동 제작기",
+    "englishName": "Jaylin MV Maker",
+    "localPath": "C:\\Users\\user\\my-projects\\ai-long-video-maker",
+    "githubRepository": "https://github.com/jlin200/jaylin-mv-maker",
+    "remote": "https://github.com/jlin200/jaylin-mv-maker.git",
+    "branch": "main",
+    "visibility": "PUBLIC",
+    "currentAssetVersion": "20260620-angle-visible",
+    "lastKnownStatus": "로컬 Git 저장소 생성, GitHub push 완료, main 브랜치가 origin/main을 추적 중",
+    "handoffCreatedAt": "2026-06-26 Asia/Seoul"
+  },
+  "ownerContext": {
+    "userRole": "선생님",
+    "targetUsers": "본인과 수강생 약 1500명",
+    "mainGoal": "수강생도 웹에서 접속해 프롬프트, 이미지, 영상 제작 흐름을 사용할 수 있는 AI 뮤비 자동 제작 도구",
+    "costDirection": "서버비는 거의 들지 않게 정적 웹앱으로 배포하고, API 비용은 각 사용자가 자기 키로 부담하는 구조",
+    "preferredLanguage": "한국어 UI",
+    "importantTone": "초보 수강생도 이해할 수 있게 단계별로 쉽고 명확하게"
+  },
+  "deploymentPlan": {
+    "recommended": "Cloudflare Pages 또는 GitHub Pages",
+    "reason": "현재 앱은 index.html, styles.css, app.js로 구성된 정적 웹앱이라 서버 없이 배포 가능",
+    "serverCostAvoidance": "파일은 정적 호스팅에 올리고, Google/Suno API 호출은 사용자의 브라우저에서 각자 API 키로 실행",
+    "studentAccessModel": "수강생에게 배포 URL 공유, 수강생은 자기 Google AI Studio API 키와 필요 시 Suno API 키를 입력",
+    "warning": "선생님 API 키 하나를 1500명에게 공유하면 비용 폭증과 키 유출 위험이 있으므로 피해야 함"
+  },
+  "files": {
+    "source": [
+      "index.html",
+      "styles.css",
+      "app.js",
+      "README.md",
+      ".gitignore"
+    ],
+    "backupZip": "jaylin-mv-current-build.zip",
+    "ignoredFiles": [
+      "jaylin-mv-current-build.zip",
+      "*.zip"
+    ]
+  },
+  "coreFeatures": [
+    "Google API 키를 브라우저에서 입력하고 적용",
+    "Google 이미지 생성 모델 자동 후보 확인 및 사용 가능 모델 자동 선택",
+    "참고 이미지 업로드",
+    "캐릭터 이미지 선택 또는 업로드",
+    "음악 업로드",
+    "Suno 호환 API 키와 API 주소 입력",
+    "Suno 음악 생성 요청 및 생성된 음악 미리보기/다운로드/배경음악 적용",
+    "시리즈 템플릿 선택",
+    "3개 샘플 이미지 생성",
+    "10개 샘플 이미지 생성",
+    "60개 프롬프트 + 60개 이미지 생성",
+    "60개 이미지 생성 후 Veo 영상까지 바로 제작",
+    "샘플이 마음에 들면 풀버전 뮤비 만들기",
+    "롱폼 생성",
+    "쇼츠 생성",
+    "Veo로 진짜 영상 만들기",
+    "이미지 한번에 다운로드",
+    "영상 한번에 다운로드",
+    "만든 프롬프트 저장",
+    "전부 리셋",
+    "이미지 크게 미리보기",
+    "내 영상들/인기 예시 스타일 갤러리",
+    "비슷하게 만들기 흐름",
+    "캘리포니아 두왑 참고 유튜브 영상 미리보기",
+    "카메라 각도 섞기 및 장면별 한국어 각도 카드 표시"
+  ],
+  "workflow": {
+    "step1": "API 설정",
+    "step2": {
+      "title": "프로젝트 준비",
+      "substeps": [
+        "2단계 1 음악 선정",
+        "2단계 2 프로젝트 소스",
+        "2단계 3 시리즈 템플릿"
+      ]
+    },
+    "step3": "원하는 제작 단계를 고르세요",
+    "productionOptions": [
+      "샘플로 3개 이미지만 만들어보기",
+      "샘플로 10개 이미지만 먼저 만들어보기",
+      "60개 프롬프트 + 60개 이미지 만들기",
+      "60개 이미지 만든 뒤 영상까지 바로 만들기",
+      "샘플이 마음에 들면 뮤비 풀버전 만들기"
+    ]
+  },
+  "seriesTemplates": [
+    {
+      "key": "doowop",
+      "name": "시니어채널 두왑 시리즈",
+      "summary": "1960년대 캘리포니아 해변 도시, 팜트리 거리, 빈티지 다이너, 클래식카, 주크박스, 보드워크, 청춘 커플과 친구들",
+      "referenceVideo": "https://youtu.be/H0QgEYMPH60"
+    },
+    {
+      "key": "masterpiece",
+      "name": "시니어채널 명화 시리즈",
+      "summary": "중세·르네상스풍 여인, 성 내부, 돌창문, 정원, 촛불, 꽃, 벨벳 드레스, 고전 유화 감성"
+    },
+    {
+      "key": "italianLove",
+      "name": "이탈리안 러브송 시리즈",
+      "summary": "이탈리아 골목, 발코니, 카페, 베스파, 꽃 장식 창문, 해안 마을, 로맨틱 커플"
+    },
+    {
+      "key": "summerVintage",
+      "name": "여름 빈티지 시리즈",
+      "summary": "해변, 파라솔, 빈티지 수영복, 휴양지 모텔, 수영장, 선글라스, 여름 소품"
+    },
+    {
+      "key": "cafeJazz",
+      "name": "카페 재즈 빈티지 스타일",
+      "summary": "재즈 카페 내부, 커피잔, 책, 꽃병, 창밖 비, 레코드판, 따뜻한 조명"
+    },
+    {
+      "key": "hollywoodWalk",
+      "name": "할리우드 워킹 빈티지 시리즈",
+      "summary": "올드 할리우드 거리, 극장 간판, 호텔, 야자수, 우아한 여성 워킹샷, 클래식카"
+    },
+    {
+      "key": "lasVegas",
+      "name": "라스베가스 빈티지 스타일",
+      "summary": "빈티지 라스베가스 스트립, 네온 카지노, 호텔 입구, 칵테일 바, 쇼걸 무드, 클래식카"
+    },
+    {
+      "key": "mapleFantasy",
+      "name": "메이플 판타지 컨셉",
+      "summary": "공식 캐릭터/로고를 복사하지 않는 밝은 2D 판타지 RPG 감성, 숲, 마법, 모험, 귀여운 캐릭터"
+    }
+  ],
+  "apiAndModels": {
+    "google": {
+      "keyInput": "사용자 브라우저에서 입력",
+      "acceptedKeyPrefixes": [
+        "AQ.A",
+        "AIza"
+      ],
+      "textModelDefault": "gemini-2.5-flash",
+      "imageModelMode": "auto",
+      "knownAvailableImageModelsFromUserAccount": [
+        "gemini-2.5-flash-image",
+        "gemini-3-pro-image-preview",
+        "gemini-3-pro-image",
+        "nano-banana-pro-preview",
+        "gemini-3.1-flash-image-preview",
+        "gemini-3.1-flash-image",
+        "imagen-4.0-generate-001",
+        "imagen-4.0-ultra-generate-001",
+        "imagen-4.0-fast-generate-001"
+      ],
+      "knownBillingError": "Your project has exceeded its monthly spending cap",
+      "billingGuidance": "AI Studio spend cap을 올리거나 다른 Google API 키 사용"
+    },
+    "veo": {
+      "modelsInUi": [
+        "veo-3.1-fast-generate-preview",
+        "veo-3.1-generate-preview",
+        "veo-3.1-lite-generate-preview"
+      ],
+      "clipDurationSeconds": 8,
+      "startTrimSeconds": 0.4,
+      "importantBehavior": "Veo 클립에는 음악을 넣지 말고 silent video only로 만들며, 최종 편집 단계에서 선택한 배경음악을 전체 영상에 한 번에 입힘"
+    },
+    "suno": {
+      "defaultEndpoint": "https://api.sunoapi.org/api/v1/generate",
+      "recordEndpoint": "https://api.sunoapi.org/api/v1/generate/record-info",
+      "note": "브라우저 직접 호출은 CORS나 API 정책에 따라 실패할 수 있음. 실패하면 Suno 사이트에서 MP3를 받아 음악 업로드 사용"
+    }
+  },
+  "designDirection": {
+    "language": "전체 한국어",
+    "visualReference": [
+      "whiskautomation.com 문서 스타일",
+      "flyu.ai 스타일의 어두운 배경 + 라임/그린 강조 + 카드형 갤러리"
+    ],
+    "layoutDirection": [
+      "처음부터 모든 단계가 보이면 복잡하므로 단계별로 노출",
+      "2단계는 음악 선정, 프로젝트 소스, 시리즈 템플릿으로 분리",
+      "전부 리셋 버튼은 완전 빨강 계열로 눈에 띄게",
+      "설명은 초보자가 이해할 수 있게 간단한 한국어로 표시",
+      "시리즈 구분 포인트는 잘리지 않게 카드/세로형 표로 표시"
+    ]
+  },
+  "recentFixes": [
+    "장면 연결 시 검정 화면이 튀지 않도록 Veo 클립 합성에서 시작부 trim 적용",
+    "Veo 클립은 장면당 8초로 제작하도록 변경",
+    "영상 자체 오디오를 제거하고 선택한 배경음악을 최종 영상에 한 번에 입히도록 변경",
+    "이미지 비율은 16:9와 9:16만 유지, 1:1 제거",
+    "카메라 각도 섞기 버튼 추가",
+    "카메라 각도 섞기 후 장면 리스트에 한국어 각도 카드가 보이도록 변경",
+    "영어 영상 움직임 프롬프트는 접힌 details로 숨김",
+    "캘리포니아 두왑 선택 시 참고 유튜브 영상 iframe 표시",
+    "GitHub 저장소 jlin200/jaylin-mv-maker 생성 및 push 완료"
+  ],
+  "knownIssuesAndWarnings": [
+    "README.md 일부 한글이 깨져 보일 수 있음. 이어 작업 시 README를 UTF-8 한국어로 다시 정리하는 것을 추천",
+    "Google 이미지/Veo API는 사용자의 프로젝트 지출 한도와 모델 접근 권한에 따라 실패할 수 있음",
+    "Suno API는 공식 공개 API 형태가 계정/서비스별로 다를 수 있고 브라우저 CORS 때문에 실패할 수 있음",
+    "브라우저에서 사용자의 API 키를 직접 쓰는 구조이므로 키를 서버에 저장하지 않는 것이 핵심",
+    "현재 앱은 정적 앱이므로 학생별 작업물은 서버에 저장되지 않음"
+  ],
+  "nextRecommendedTasks": [
+    "README.md 한글 깨짐 수정",
+    "Cloudflare Pages 또는 GitHub Pages 배포 설정",
+    "수강생용 사용법 페이지 또는 PDF 만들기",
+    "API 키 설정 가이드 버튼과 에러 메시지 더 쉽게 다듬기",
+    "Suno API가 실패할 경우 음악 업로드 방식으로 자연스럽게 유도",
+    "Veo 결과물 이어붙이기 품질 추가 검증",
+    "모바일 화면에서 단계별 UI 겹침 없는지 다시 점검",
+    "GitHub에 수정 후 commit/push 반복"
+  ],
+  "commands": {
+    "openLocalFolder": "cd C:\\Users\\user\\my-projects\\ai-long-video-maker",
+    "checkGitStatus": "git status --short --branch",
+    "commitChanges": "git add . && git commit -m \"Update Jaylin MV maker\"",
+    "pushChanges": "git push origin main",
+    "repositoryUrl": "https://github.com/jlin200/jaylin-mv-maker"
+  }
+}
