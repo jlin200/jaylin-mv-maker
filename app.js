@@ -2237,9 +2237,61 @@ async function startVeoOperation(apiKey, model, prompt, imageUrl, clipDuration) 
   throw new Error(errors.join("\n"));
 }
 
+function findVeoVideoUri(value, depth = 0) {
+  if (!value || depth > 8) return "";
+  if (typeof value === "string") {
+    if (/^https?:\/\//i.test(value) || value.startsWith("gs://")) return value;
+    return "";
+  }
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      const found = findVeoVideoUri(item, depth + 1);
+      if (found) return found;
+    }
+    return "";
+  }
+  if (typeof value !== "object") return "";
+
+  const directKeys = [
+    "uri",
+    "gcsUri",
+    "videoUri",
+    "downloadUri",
+    "downloadUrl",
+    "signedUri",
+    "signedUrl",
+  ];
+  for (const key of directKeys) {
+    const found = findVeoVideoUri(value[key], depth + 1);
+    if (found) return found;
+  }
+
+  const preferredKeys = [
+    "video",
+    "videos",
+    "generatedSamples",
+    "samples",
+    "generatedVideos",
+    "generateVideoResponse",
+    "response",
+    "result",
+  ];
+  for (const key of preferredKeys) {
+    const found = findVeoVideoUri(value[key], depth + 1);
+    if (found) return found;
+  }
+
+  for (const item of Object.values(value)) {
+    const found = findVeoVideoUri(item, depth + 1);
+    if (found) return found;
+  }
+  return "";
+}
+
 async function pollVeoOperation(apiKey, operationName, label) {
   const operationUrl = `https://generativelanguage.googleapis.com/v1beta/${operationName}`;
   const startedAt = Date.now();
+  let doneWithoutUriCount = 0;
   while (true) {
     const response = await fetch(operationUrl, {
       headers: { "x-goog-api-key": apiKey },
@@ -2249,9 +2301,17 @@ async function pollVeoOperation(apiKey, operationName, label) {
       throw new Error(data.error?.message || `Veo 상태 확인 실패: ${response.status}`);
     }
     if (data.done) {
-      const sample = data.response?.generateVideoResponse?.generatedSamples?.[0];
-      const uri = sample?.video?.uri;
-      if (!uri) throw new Error("Veo 영상 다운로드 주소를 받지 못했습니다.");
+      const uri = findVeoVideoUri(data);
+      if (!uri) {
+        doneWithoutUriCount += 1;
+        if (doneWithoutUriCount <= 6) {
+          log(`Veo 작업은 완료됐지만 다운로드 주소가 아직 준비되지 않았습니다. ${doneWithoutUriCount}/6 추가 확인 중...`);
+          await new Promise((resolve) => setTimeout(resolve, 10000));
+          continue;
+        }
+        console.warn("Veo operation response without video uri", data);
+        throw new Error("Veo 작업은 완료됐지만 영상 다운로드 주소를 찾지 못했습니다. Google 응답이 지연되었거나 영상 파일 생성에 실패했을 수 있습니다. 잠시 뒤 같은 장면부터 다시 시도해 주세요.");
+      }
       return uri;
     }
     const elapsed = Math.round((Date.now() - startedAt) / 1000);
@@ -2477,6 +2537,9 @@ async function createVeoVideo() {
     log(message, "error");
     if (message.includes("Google/Veo API 사용량 한도")) {
       log("Veo 한도 문제라서 이미지와 프롬프트는 그대로 둡니다. 한도 회복 후 `Veo로 진짜 영상 만들기`를 다시 누르거나, 급하면 `이미지로 영상만 만들기`를 사용해 주세요.");
+    }
+    if (state.videoClips.length) {
+      log(`이미 완성된 Veo 클립 ${state.videoClips.length}개는 보존했습니다. '영상 한번에 다운받기'를 누르면 현재 클립 ZIP을 받을 수 있습니다.`);
     }
     return false;
   }
