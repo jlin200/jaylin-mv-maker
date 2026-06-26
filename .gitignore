@@ -1,4 +1,5 @@
 jaylin-mv-current-build.zip
+jaylin-mv-current-build/
 *.zip
 .DS_Store
 Thumbs.db

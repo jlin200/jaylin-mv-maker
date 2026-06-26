@@ -12,6 +12,7 @@ const state = {
   selectedSimilarSeries: "",
   videoBlob: null,
   anglePreviewOpen: false,
+  lastVeoClipLimit: 0,
 };
 
 const SERIES_PRESETS = {
@@ -665,6 +666,7 @@ const elements = {
   imageQuality: $("imageQuality"),
   showCaptions: $("showCaptions"),
   varyAngles: $("varyAngles"),
+  veoClipLimit: $("veoClipLimit"),
   applyKeyButton: $("applyKeyButton"),
   keyStatus: $("keyStatus"),
   autoButton: $("autoButton"),
@@ -847,8 +849,22 @@ function friendlyApiError(error) {
   if (message.includes("PERMISSION_DENIED") || message.includes("403")) {
     return "Google API 사용 권한이 막혀 있습니다. AI Studio 프로젝트에서 Gemini API 사용 설정과 결제/할당량을 확인해 주세요.";
   }
-  if (message.includes("429") || lower.includes("quota") || lower.includes("billing") || lower.includes("exceeded")) {
-    return "Google API 사용량 한도에 걸렸습니다. 잠시 뒤 다시 시도하거나 할당량을 확인해 주세요.";
+  if (
+    message.includes("429") ||
+    lower.includes("quota") ||
+    lower.includes("resource_exhausted") ||
+    lower.includes("rate limit") ||
+    lower.includes("billing") ||
+    lower.includes("exceeded")
+  ) {
+    return [
+      "Google/Veo API 사용량 한도에 걸렸습니다.",
+      "후불결제를 켰어도 Veo 생성 한도, 분당 요청 한도, 프로젝트 월 지출 한도는 별도로 적용됩니다.",
+      "이건 앱 오류가 아니라 현재 Google 계정 또는 프로젝트의 Veo 할당량이 부족하거나 일시적으로 막힌 상태입니다.",
+      "해결 방법: 잠시 뒤 다시 시도하거나, AI Studio Spend에서 프로젝트 월 한도를 올리고, Google Cloud Quotas에서 Veo/Gemini API 할당량 증가를 요청해 주세요.",
+      "앱에서는 기본값을 `3개 먼저 테스트`로 바꿨습니다. 10개/전체 Veo 생성은 한도가 충분할 때 `Veo 생성 장면 수`를 바꿔 진행하세요.",
+      "이미 만든 이미지는 유지됩니다. Veo가 막히면 임시로 `이미지로 영상만 만들기` 방식은 사용할 수 있습니다.",
+    ].join("\n");
   }
   return message;
 }
@@ -2120,6 +2136,14 @@ function pickVeoClipDuration(totalDuration, availableScenes) {
   return VEO_CLIP_DURATION_SECONDS;
 }
 
+function getRequestedVeoClipCount(availableScenes) {
+  const value = elements.veoClipLimit?.value || "3";
+  if (value === "all") return availableScenes;
+  const requested = Number(value);
+  if (!Number.isFinite(requested) || requested <= 0) return Math.min(3, availableScenes);
+  return Math.max(1, Math.min(requested, availableScenes));
+}
+
 function bytesToBase64(bytes) {
   let binary = "";
   const chunkSize = 0x8000;
@@ -2286,10 +2310,14 @@ async function generateVeoClips() {
 
   const totalDuration = Number(elements.duration.value);
   const clipDuration = pickVeoClipDuration(totalDuration, images.length);
-  const clipCount = images.length;
+  const clipCount = getRequestedVeoClipCount(images.length);
+  state.lastVeoClipLimit = clipCount;
   state.videoClips = [];
 
   log(`Veo로 진짜 영상 클립을 생성합니다. 모델: ${model}, 장면: ${clipCount}개, 클립 길이: ${clipDuration}초`);
+  if (clipCount < images.length) {
+    log(`Veo 한도 절약 모드입니다. 현재 이미지 ${images.length}개 중 앞 ${clipCount}개만 먼저 영상으로 테스트합니다. 한도가 충분하면 'Veo 생성 장면 수'를 10개 또는 전체로 바꿔 주세요.`);
+  }
   log("각 장면을 8초로 넉넉하게 만든 뒤, 최종 편집에서 앞부분 멈칫함을 살짝 잘라 자연스럽게 이어붙입니다.");
   log("이미지 확대가 아니라, 각 이미지를 시작 프레임으로 넣어 Veo가 실제 움직임을 생성합니다.");
 
@@ -2367,11 +2395,18 @@ async function composeVeoClips() {
     recorder.onstop = resolve;
   });
 
-  const totalDuration = Number(elements.duration.value);
+  const allImageCount = state.images.filter(Boolean).length;
+  const isLimitedVeoRun = preparedClips.length < allImageCount;
+  const totalDuration = isLimitedVeoRun
+    ? preparedClips.reduce((sum, clip) => sum + (clip.video.duration || VEO_CLIP_DURATION_SECONDS), 0)
+    : Number(elements.duration.value);
   const sceneDuration = totalDuration / Math.max(1, preparedClips.length);
   const recordingStartedAt = performance.now();
 
-  setProgress(75, "Veo 클립 자동 편집 중");
+  setProgress(75, isLimitedVeoRun ? "Veo 테스트 영상 편집 중" : "Veo 클립 자동 편집 중");
+  if (isLimitedVeoRun) {
+    log(`Veo 테스트 영상은 ${preparedClips.length}개 클립 기준 약 ${Math.round(totalDuration)}초로 만듭니다. 전체 5분 제작은 한도가 충분할 때 '현재 이미지 전부'를 선택해 주세요.`);
+  }
   recorder.start(1000);
   if (musicElement && audioContext) {
     await audioContext.resume();
@@ -2438,7 +2473,11 @@ async function createVeoVideo() {
     return true;
   } catch (error) {
     setProgress(0, "오류");
-    log(friendlyApiError(error), "error");
+    const message = friendlyApiError(error);
+    log(message, "error");
+    if (message.includes("Google/Veo API 사용량 한도")) {
+      log("Veo 한도 문제라서 이미지와 프롬프트는 그대로 둡니다. 한도 회복 후 `Veo로 진짜 영상 만들기`를 다시 누르거나, 급하면 `이미지로 영상만 만들기`를 사용해 주세요.");
+    }
     return false;
   }
 }
