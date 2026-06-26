@@ -549,6 +549,8 @@ const COMMON_MOTION_RULE =
 
 const VEO_CLIP_DURATION_SECONDS = 8;
 const VEO_START_TRIM_SECONDS = 0.4;
+const VEO_COOLDOWN_SECONDS = 20;
+const VEO_RETRY_DELAYS_SECONDS = [30, 60];
 
 const CAMERA_ANGLE_DIRECTIONS = [
   "wide establishing shot, full environment visible, cinematic composition",
@@ -2144,6 +2146,27 @@ function getRequestedVeoClipCount(availableScenes) {
   return Math.max(1, Math.min(requested, availableScenes));
 }
 
+function wait(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function isLikelyTemporaryVeoError(error) {
+  const message = String(error?.message || error || "").toLowerCase();
+  return (
+    message.includes("429") ||
+    message.includes("quota") ||
+    message.includes("resource_exhausted") ||
+    message.includes("rate limit") ||
+    message.includes("try again") ||
+    message.includes("temporarily") ||
+    message.includes("timeout") ||
+    message.includes("download") ||
+    message.includes("not ready") ||
+    message.includes("503") ||
+    message.includes("500")
+  );
+}
+
 function bytesToBase64(bytes) {
   let binary = "";
   const chunkSize = 0x8000;
@@ -2328,6 +2351,30 @@ async function downloadVeoClip(apiKey, uri) {
   return response.blob();
 }
 
+async function createSingleVeoClipWithRetries({ apiKey, model, prompt, imageUrl, clipDuration, label, sceneTitle, progressBase, progressSpan }) {
+  const maxAttempts = 1 + VEO_RETRY_DELAYS_SECONDS.length;
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      const retryText = attempt > 1 ? ` 재시도 ${attempt}/${maxAttempts}` : "";
+      setProgress(progressBase, `Veo 장면 ${label}${retryText}`);
+      log(`Veo 클립 생성 중: ${label} ${sceneTitle || ""}${retryText}`);
+      const operationName = await startVeoOperation(apiKey, model, prompt, imageUrl, clipDuration);
+      const uri = await pollVeoOperation(apiKey, operationName, label);
+      const blob = await downloadVeoClip(apiKey, uri);
+      setProgress(progressBase + progressSpan, `Veo 장면 ${label} 완료`);
+      return blob;
+    } catch (error) {
+      const canRetry = attempt < maxAttempts && isLikelyTemporaryVeoError(error);
+      if (!canRetry) throw error;
+      const delaySeconds = VEO_RETRY_DELAYS_SECONDS[attempt - 1];
+      log(`Veo가 잠깐 막혔습니다. ${delaySeconds}초 기다린 뒤 같은 장면을 다시 시도합니다. 장면: ${label}`);
+      setProgress(progressBase, `Veo 대기 후 재시도 ${label}`);
+      await wait(delaySeconds * 1000);
+    }
+  }
+  throw new Error("Veo clip retry failed unexpectedly.");
+}
+
 function drawVideoCover(ctx, video, width, height) {
   if (!video.videoWidth || !video.videoHeight) return false;
   const scale = Math.max(width / video.videoWidth, height / video.videoHeight);
@@ -2397,6 +2444,62 @@ async function generateVeoClips() {
       log(`Veo 클립 실패: ${label}. 이 장면은 건너뛰고 다음 장면을 계속 만듭니다. 이유: ${friendlyApiError(error)}`, "error");
     }
   }
+  if (!state.videoClips.length) {
+    throw new Error("Veo 클립을 하나도 만들지 못했습니다. API 한도나 Veo 응답 상태를 확인해 주세요.");
+  }
+  if (state.videoClips.length < clipCount) {
+    log(`요청한 ${clipCount}개 중 ${state.videoClips.length}개만 성공했습니다. 성공한 클립만 이어붙여 테스트 영상을 만듭니다.`);
+  }
+  return state.videoClips;
+}
+
+async function generateVeoClipsSafely() {
+  normalizeRatio();
+  syncMotionPrompts();
+  const apiKey = getApiKey();
+  const model = elements.videoModel?.value || "veo-3.1-fast-generate-preview";
+  const images = state.images.filter(Boolean);
+  if (!images.length) throw new Error("먼저 이미지를 생성해 주세요.");
+
+  const totalDuration = Number(elements.duration.value);
+  const clipDuration = pickVeoClipDuration(totalDuration, images.length);
+  const clipCount = getRequestedVeoClipCount(images.length);
+  state.lastVeoClipLimit = clipCount;
+  state.videoClips = [];
+
+  log(`Veo 안전 생성 모드로 시작합니다. 장면 ${clipCount}개, 클립 ${clipDuration}초, 장면 사이 ${VEO_COOLDOWN_SECONDS}초 대기.`);
+  log("한 번에 몰아서 요청하지 않고, 1개 생성 완료 후 쉬었다가 다음 1개를 생성합니다.");
+
+  for (let index = 0; index < clipCount; index += 1) {
+    const scene = state.prompts[index] || { title: `장면 ${index + 1}`, prompt: "" };
+    const prompt = buildVeoPrompt(scene, index, clipDuration);
+    const label = `${index + 1}/${clipCount}`;
+    const progressBase = (index / clipCount) * 70;
+    const progressSpan = 70 / clipCount;
+    try {
+      const blob = await createSingleVeoClipWithRetries({
+        apiKey,
+        model,
+        prompt,
+        imageUrl: state.images[index],
+        clipDuration,
+        label,
+        sceneTitle: scene.title || "",
+        progressBase,
+        progressSpan,
+      });
+      state.videoClips.push({ blob, prompt, index, duration: clipDuration });
+      log(`Veo 클립 완료: ${label}`);
+      if (index < clipCount - 1) {
+        log(`다음 장면 전 ${VEO_COOLDOWN_SECONDS}초 쉬어갑니다. 한도 오류를 줄이기 위한 안전 생성 모드입니다.`);
+        setProgress(progressBase + progressSpan, `다음 장면 전 대기 ${VEO_COOLDOWN_SECONDS}초`);
+        await wait(VEO_COOLDOWN_SECONDS * 1000);
+      }
+    } catch (error) {
+      log(`Veo 클립 실패: ${label}. 이 장면은 건너뛰고 다음 장면을 계속 만듭니다. 이유: ${friendlyApiError(error)}`, "error");
+    }
+  }
+
   if (!state.videoClips.length) {
     throw new Error("Veo 클립을 하나도 만들지 못했습니다. API 한도나 Veo 응답 상태를 확인해 주세요.");
   }
@@ -2538,7 +2641,7 @@ async function composeVeoClips() {
 
 async function createVeoVideo() {
   try {
-    await generateVeoClips();
+    await generateVeoClipsSafely();
     await composeVeoClips();
     return true;
   } catch (error) {
