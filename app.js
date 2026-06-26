@@ -2387,11 +2387,21 @@ async function generateVeoClips() {
     const label = `${index + 1}/${clipCount}`;
     setProgress((index / clipCount) * 70, `Veo 요청 ${label}`);
     log(`Veo 클립 생성 중: ${label} ${scene.title || ""}`);
-    const operationName = await startVeoOperation(apiKey, model, prompt, state.images[index], clipDuration);
-    const uri = await pollVeoOperation(apiKey, operationName, label);
-    const blob = await downloadVeoClip(apiKey, uri);
-    state.videoClips.push({ blob, prompt, index, duration: clipDuration });
-    log(`Veo 클립 완료: ${label}`);
+    try {
+      const operationName = await startVeoOperation(apiKey, model, prompt, state.images[index], clipDuration);
+      const uri = await pollVeoOperation(apiKey, operationName, label);
+      const blob = await downloadVeoClip(apiKey, uri);
+      state.videoClips.push({ blob, prompt, index, duration: clipDuration });
+      log(`Veo 클립 완료: ${label}`);
+    } catch (error) {
+      log(`Veo 클립 실패: ${label}. 이 장면은 건너뛰고 다음 장면을 계속 만듭니다. 이유: ${friendlyApiError(error)}`, "error");
+    }
+  }
+  if (!state.videoClips.length) {
+    throw new Error("Veo 클립을 하나도 만들지 못했습니다. API 한도나 Veo 응답 상태를 확인해 주세요.");
+  }
+  if (state.videoClips.length < clipCount) {
+    log(`요청한 ${clipCount}개 중 ${state.videoClips.length}개만 성공했습니다. 성공한 클립만 이어붙여 테스트 영상을 만듭니다.`);
   }
   return state.videoClips;
 }
@@ -2669,6 +2679,7 @@ function downloadBlob(blob, filename) {
   document.body.appendChild(link);
   link.click();
   link.remove();
+  setTimeout(() => URL.revokeObjectURL(link.href), 30000);
 }
 
 function resetAllWork() {
@@ -2857,15 +2868,14 @@ async function blobToBytes(blob) {
 async function downloadCurrentVideo() {
   if (!state.videoBlob) {
     if (state.videoClips.length) {
-      const files = [];
+      log(`완성 영상은 아직 없어서 Veo 클립 ${state.videoClips.length}개를 각각 다운로드합니다. 브라우저에서 여러 파일 다운로드 허용이 필요할 수 있습니다.`);
       for (let index = 0; index < state.videoClips.length; index += 1) {
-        files.push({
-          name: `veo-clip-${String(index + 1).padStart(2, "0")}.mp4`,
-          bytes: await blobToBytes(state.videoClips[index].blob),
-        });
+        const clip = state.videoClips[index];
+        downloadBlob(clip.blob, `veo-clip-${String(index + 1).padStart(2, "0")}.mp4`);
+        log(`Veo 클립 다운로드 요청: ${index + 1}/${state.videoClips.length}`);
+        await new Promise((resolve) => setTimeout(resolve, 600));
       }
-      downloadBlob(createZip(files), `veo-clips-${Date.now()}.zip`);
-      log(`Veo 클립 ${files.length}개를 ZIP으로 다운로드했습니다.`);
+      log(`Veo 클립 ${state.videoClips.length}개 다운로드 요청을 보냈습니다.`);
       return;
     }
     log("다운로드할 영상이 없습니다. 먼저 Veo 영상을 생성해 주세요.", "error");
@@ -3109,6 +3119,9 @@ function bindEvents() {
     setBusy(true);
     try {
       await downloadCurrentVideo();
+    } catch (error) {
+      setProgress(0, "다운로드 오류");
+      log(friendlyApiError(error), "error");
     } finally {
       setBusy(false);
     }
@@ -3340,6 +3353,9 @@ function bindEvents() {
     setBusy(true);
     try {
       await downloadCurrentVideo();
+    } catch (error) {
+      setProgress(0, "다운로드 오류");
+      log(friendlyApiError(error), "error");
     } finally {
       setBusy(false);
     }
